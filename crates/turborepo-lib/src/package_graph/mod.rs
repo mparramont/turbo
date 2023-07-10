@@ -5,7 +5,11 @@ use std::{
 
 use anyhow::Result;
 use itertools::Itertools;
-use petgraph::visit::EdgeRef;
+use petgraph::{
+    stable_graph::NodeIndex,
+    visit::{depth_first_search, EdgeRef, Reversed, Visitable},
+    Directed, Graph,
+};
 use turbopath::{AbsoluteSystemPath, AnchoredSystemPathBuf};
 use turborepo_lockfiles::Lockfile;
 
@@ -127,24 +131,61 @@ impl PackageGraph {
             .expect("package graph was built without root package.json")
     }
 
-    pub fn transitive_closure<'a, I: IntoIterator<Item = &'a WorkspaceNode>>(
-        &self,
+    /// For a given workspace in the repo, returns the set of workspaces
+    /// that this one depends on, excluding those that are unresolved.
+    ///
+    /// Example:
+    ///
+    /// a -> b -> c (external)
+    ///
+    /// dependencies(a) = {b}
+    /// dependencies(b) = {}
+    /// dependencies(c) = None
+    pub fn dependencies<'a>(&'a self, node: &WorkspaceNode) -> HashSet<&'a WorkspaceNode> {
+        let mut dependencies =
+            self.transitive_closure_inner(Some(node), &self.workspace_graph, Direction::Normal);
+        dependencies.remove(node);
+        dependencies
+    }
+
+    /// Returns the transitive closure of the given nodes in the workspace
+    /// graph. Note that this includes the nodes themselves. If you want just
+    /// the dependencies, or the dependents, use `dependencies` or `dependents`
+    pub fn transitive_closure<'a, 'b, I: IntoIterator<Item = &'b WorkspaceNode>>(
+        &'a self,
         nodes: I,
-    ) -> HashSet<&WorkspaceNode> {
-        let indexes = nodes
+    ) -> HashSet<&'a WorkspaceNode> {
+        self.transitive_closure_inner(nodes, &self.workspace_graph, Direction::Normal)
+    }
+
+    fn transitive_closure_inner<'a, 'b, I: IntoIterator<Item = &'b WorkspaceNode>>(
+        &'a self,
+        nodes: I,
+        graph: &'a Graph<WorkspaceNode, (), Directed, u32>,
+        direction: Direction,
+    ) -> HashSet<&'a WorkspaceNode> {
+        let indices = nodes
             .into_iter()
             .filter_map(|node| self.node_lookup.get(node))
             .copied();
+
         let mut visited = HashSet::new();
-        petgraph::visit::depth_first_search(&self.workspace_graph, indexes, |event| {
+
+        let visitor = |event| {
             if let petgraph::visit::DfsEvent::Discover(n, _) = event {
                 visited.insert(
-                    self.workspace_graph
+                    graph
                         .node_weight(n)
                         .expect("node index found during dfs doesn't exist"),
                 );
             }
-        });
+        };
+
+        match direction {
+            Direction::Normal => depth_first_search(graph, indices, visitor),
+            Direction::Inverted => depth_first_search(Reversed(graph), indices, visitor),
+        };
+
         visited
     }
 
@@ -159,6 +200,13 @@ impl PackageGraph {
             .flatten()
             .collect()
     }
+}
+
+/// The direction of the transitive closure. Inverted means that each
+/// connection is traversed in the opposite direction.
+enum Direction {
+    Normal,
+    Inverted,
 }
 
 impl fmt::Display for WorkspaceName {
