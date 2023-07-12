@@ -2,6 +2,7 @@
 
 mod global_hash;
 mod scope;
+mod summary;
 pub mod task_id;
 
 use anyhow::{Context as ErrorContext, Result};

@@ -580,6 +580,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "base-encode"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a17bd29f7c70f32e9387f4d4acfa5ea7b7749ef784fb78cf382df97069337b8c"
+
+[[package]]
 name = "base-x"
 version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6745,6 +6751,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "svix-ksuid"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "75d773122e48817eb6eb74605cf799574a855bf4c7eb0c1bb06c005067123b13"
+dependencies = [
+ "base-encode",
+ "byteorder",
+ "getrandom",
+ "time 0.3.20",
+]
+
+[[package]]
 name = "swc"
 version = "0.264.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9594,9 +9612,11 @@ dependencies = [
 name = "turborepo-env"
 version = "0.1.0"
 dependencies = [
+ "hex",
  "lazy_static",
  "regex",
  "serde",
+ "sha2",
  "test-case",
  "thiserror",
 ]
@@ -9685,6 +9705,7 @@ dependencies = [
  "serde_yaml 0.9.21",
  "sha2",
  "shared_child",
+ "svix-ksuid",
  "sysinfo",
  "tempdir",
  "tempfile",
@@ -9762,8 +9783,8 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 0.1.10",
- "rand 0.4.6",
+ "cfg-if 1.0.0",
+ "rand 0.8.5",
  "static_assertions",
 ]
 
