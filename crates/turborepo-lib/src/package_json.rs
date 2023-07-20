@@ -79,11 +79,11 @@ impl PackageJson {
 
     pub fn get_external_deps_hash(
         &self,
-        external_deps: HashSet<turborepo_lockfiles::Package>,
-    ) -> u64 {
-        let mut transitive_deps = Vec::with_capacity(external_deps.len());
+        external_deps: HashSet<&turborepo_lockfiles::Package>,
+    ) -> String {
+        let mut transitive_deps = Vec::with_capacity(1);
         for dependency in external_deps {
-            transitive_deps.push(dependency);
+            transitive_deps.push(dependency.clone());
         }
 
         transitive_deps.sort_by(|a, b| match a.key.cmp(&b.key) {
@@ -91,7 +91,16 @@ impl PackageJson {
             other => other,
         });
 
-        LockFilePackages(transitive_deps).hash()
+        transitive_deps.drain(124..);
+        // transitive_deps.push(turborepo_lockfiles::Package {
+        //     key: "dummy".to_string(),
+        //     version: "dummy".to_string(),
+        // });
+
+        let hash = LockFilePackages(transitive_deps).hash();
+        println!("rust lockfile packages hash: {}", hash);
+
+        hash
     }
 }
 

@@ -131,7 +131,18 @@ func (p *PackageJSON) SetExternalDeps(externalDeps mapset.Set) error {
 		dependency := dependency.(lockfile.Package)
 		p.TransitiveDeps = append(p.TransitiveDeps, dependency)
 	}
+
 	sort.Sort(lockfile.ByKey(p.TransitiveDeps))
+
+	if len(p.TransitiveDeps) > 124 {
+		p.TransitiveDeps = p.TransitiveDeps[:124]
+	}
+
+	//p.TransitiveDeps = append(p.TransitiveDeps, lockfile.Package{
+	//	Key:     "dummy",
+	//	Version: "dummy",
+	//})
+
 	hashOfExternalDeps, err := HashLockfilePackages(p.TransitiveDeps)
 	if err != nil {
 		return err
