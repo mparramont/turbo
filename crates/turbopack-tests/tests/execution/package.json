@@ -1,4 +1,5 @@
 {
+  "name": "tests-execution",
   "private": true,
   "dependencies": {
     "expect": "29.5.0",
