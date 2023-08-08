@@ -1584,7 +1584,6 @@ pub enum LinkContent {
 #[derive(Clone)]
 pub struct File {
     meta: FileMeta,
-    #[turbo_tasks(debug_ignore)]
     content: Rope,
 }
 
