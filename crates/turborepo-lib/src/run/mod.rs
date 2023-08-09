@@ -12,7 +12,6 @@ use tracing::{debug, info};
 use turborepo_cache::{http::APIAuth, AsyncCache};
 use turborepo_env::EnvironmentVariableMap;
 use turborepo_scm::SCM;
-use turborepo_ui::UI;
 
 use crate::{
     commands::CommandBase, config::TurboJson, daemon::DaemonConnector, manager::Manager,

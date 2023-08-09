@@ -9,12 +9,11 @@ use turbopath::{AbsoluteSystemPath, RelativeUnixPathBuf};
 use turborepo_cache::RemoteCacheOpts;
 
 use crate::{
+    cli::OutputLogsMode,
     config::Error,
     package_json::PackageJson,
     run::task_id::{get_package_task_from_id, is_package_task, root_task_id},
-    task_graph::{
-        BookkeepingTaskDefinition, Pipeline, TaskDefinitionHashable, TaskOutputMode, TaskOutputs,
-    },
+    task_graph::{BookkeepingTaskDefinition, Pipeline, TaskDefinitionHashable, TaskOutputs},
 };
 
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq, Clone)]
@@ -92,7 +91,7 @@ struct RawTaskDefinition {
     #[serde(skip_serializing_if = "Option::is_none")]
     outputs: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    output_mode: Option<TaskOutputMode>,
+    output_mode: Option<OutputLogsMode>,
 }
 
 const CONFIG_FILE: &str = "turbo.json";
@@ -532,11 +531,12 @@ mod tests {
 
     use super::RawTurboJSON;
     use crate::{
+        cli::OutputLogsMode,
         config::{turbo::RawTaskDefinition, TurboJson},
         package_json::PackageJson,
         task_graph::{
-            BookkeepingTaskDefinition, TaskDefinitionExperiments, TaskDefinitionHashable,
-            TaskOutputMode, TaskOutputs,
+            BookkeepingTaskDefinition, OutputLogsMode, TaskDefinitionExperiments,
+            TaskDefinitionHashable, TaskOutputs,
         },
     };
 
@@ -697,7 +697,7 @@ mod tests {
             outputs: Some(vec!["package/a/dist".to_string()]),
             cache: Some(false),
             inputs: Some(vec!["package/a/src/**".to_string()]),
-            output_mode: Some(TaskOutputMode::Full),
+            output_mode: Some(OutputLogsMode::Full),
             persistent: Some(true),
         },
         BookkeepingTaskDefinition {
@@ -725,7 +725,7 @@ mod tests {
                 },
                 cache: false,
                 inputs: vec!["package/a/src/**".to_string()],
-                output_mode: TaskOutputMode::Full,
+                output_mode: OutputLogsMode::Full,
                 pass_through_env: vec!["AWS_SECRET_KEY".to_string()],
                 task_dependencies: vec!["cli#build".to_string()],
                 topological_dependencies: vec![],
@@ -791,13 +791,13 @@ mod tests {
         assert_eq!(pruned_json, expected);
     }
 
-    #[test_case("full", Some(TaskOutputMode::Full) ; "full")]
-    #[test_case("hash-only", Some(TaskOutputMode::HashOnly) ; "hash-only")]
-    #[test_case("new-only", Some(TaskOutputMode::NewOnly) ; "new-only")]
-    #[test_case("errors-only", Some(TaskOutputMode::ErrorsOnly) ; "errors-only")]
-    #[test_case("none", Some(TaskOutputMode::None) ; "none")]
+    #[test_case("full", Some(OutputLogsMode::Full) ; "full")]
+    #[test_case("hash-only", Some(OutputLogsMode::HashOnly) ; "hash-only")]
+    #[test_case("new-only", Some(OutputLogsMode::NewOnly) ; "new-only")]
+    #[test_case("errors-only", Some(OutputLogsMode::ErrorsOnly) ; "errors-only")]
+    #[test_case("none", Some(OutputLogsMode::None) ; "none")]
     #[test_case("junk", None ; "invalid value")]
-    fn test_parsing_output_mode(output_mode: &str, expected: Option<TaskOutputMode>) {
+    fn test_parsing_output_mode(output_mode: &str, expected: Option<OutputLogsMode>) {
         let json: Result<RawTurboJSON, _> = serde_json::from_value(serde_json::json!({
             "pipeline": {
                 "build": {

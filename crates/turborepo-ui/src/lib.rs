@@ -1,7 +1,7 @@
 mod color_selector;
 mod log_replayer;
 
-use std::{borrow::Cow, env, f64::consts::PI, io::IsTerminal, time::Duration};
+use std::{borrow::Cow, env, f64::consts::PI, time::Duration};
 
 use console::{Style, StyledObject};
 use indicatif::{ProgressBar, ProgressStyle};
