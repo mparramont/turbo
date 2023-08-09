@@ -18,6 +18,7 @@ if (typeof window !== "undefined" && !("requestIdleCallback" in window)) {
   window.cancelIdleCallback = (e) => clearTimeout(e);
 }
 
+// test comment
 export default function Nextra({ Component, pageProps }: NextraAppProps) {
   return (
     <SSRProvider>
